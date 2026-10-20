@@ -1,0 +1,63 @@
+name: Publish WoD20 Initiative Tool v0.1.2 beta
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-beta:
+    if: github.repository == 'rebsiot/wod20-initiative-tool'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Extract and verify packaged beta
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSET="releases/wod20-initiative-tool-v0.1.2-beta.zip"
+          test -f "$ASSET"
+          unzip -t "$ASSET"
+          unzip -o -q "$ASSET" -d .
+          node -e "const m=require('./module.json'); if(m.id!=='wod20-initiative-tool'||m.version!=='0.1.2') process.exit(1)"
+          test -f scripts/main.mjs
+          test -f styles/initiative-tool.css
+          node --check scripts/main.mjs
+          node --check scripts/order.mjs
+          node --check scripts/top-turn-controls.mjs
+          node --test tests/*.test.mjs
+
+      - name: Publish source to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f README.md module.json CHANGELOG.md RELEASE-NOTES.md TEST-REPORT.md .gitignore scripts/ styles/ tests/
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish verified v0.1.2 beta source"
+            git push origin HEAD:main
+          fi
+
+      - name: Create tagged prerelease with installable ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view v0.1.2 > /dev/null 2>&1; then
+            echo "v0.1.2 release already exists; refusing to replace its assets automatically."
+            exit 1
+          fi
+          gh release create v0.1.2             releases/wod20-initiative-tool-v0.1.2-beta.zip             --target "$(git rev-parse HEAD)"             --title "WoD20 Initiative Tool v0.1.2 (Beta)"             --notes-file RELEASE-NOTES.md             --prerelease
+
+      - name: Verify uploaded asset and release state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release view v0.1.2 --json tagName,isPrerelease,assets             --jq 'select(.tagName == "v0.1.2" and .isPrerelease == true and (.assets | any(.name == "wod20-initiative-tool-v0.1.2-beta.zip")))'
