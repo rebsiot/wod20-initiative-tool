@@ -1,6 +1,10 @@
 name: Publish WoD20 Initiative Tool v0.1.2 beta
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-beta.yml'
   workflow_dispatch:
 
 permissions:
