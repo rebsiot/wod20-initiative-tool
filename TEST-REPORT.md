@@ -1,32 +1,34 @@
-# WoD20 Initiative Tool v0.1.2 — Test Report
+# WoD20 Initiative Tool v0.1.3 — Test report
 
-**Release candidate:** v0.1.2 beta, 2026-10-19 (not deployed to a Foundry world)  
-**Source:** renamed from the locally verified v0.1.1 beta ZIP `stl-initiative-guard-v0.1.1-beta.zip` (all ZIP entries matched the unpacked working source). Repository publication is a separate verification step, not a live Foundry test.  
-**Target:** Foundry v14, any game system; no game-system schema dependencies.
+**Date:** 2026-10-20  
+**Exact source baseline:** Published `rebsiot/wod20-initiative-tool` v0.1.2 commit `b668c2fe0414f87c39ef938aabd46e62aa8eef64` and the matching 19,471-byte published beta ZIP (`SHA-256 c57d49cdd6ffd65237868f2b95f0b8602be07d55772e82d2499c8b7f4852267a`). Working module ID remains `wod20-initiative-tool`.  
+**Target:** Foundry v14; native Foundry Combatant/Combat API; WoD20 `worldofdarkness` v7.3.x health schema read-only.
 
-## Automated/mock-tested
+## Automated/mock-tested — Passed
 
-- `node --check` on all three ES modules: passed.
-- `node --test tests/*.test.mjs`: **21 passed, 0 failed** (20 retained behavioral/mock tests + 1 new module-ID/manifest/asset consistency test).
-- Initiative score plan: moving above/below, midpoint, tied values (local fractional reflow), no-op, unrolled-restriction.
-- Hook simulator: locked normal reroll/clear canceled, GM explicit bypass permitted, player's attempted bypass rejected, first roll permitted, non-initiative edits allowed, parent-Combat bulk initiative changes rejected.
-- New turn navigation mocks: GM-only, started combat only, top placement and unchanged native footer, native methods, first-round disabled state, stale encounter check, no duplicate control on rerender, rapid-click prevention and error notification.
-- Module ID, title, entry points, CSS class selectors and absence of stale runtime IDs: passed.
-- ZIP manifest/entrypoint integrity and JSON parsing: passed.
+- Node ES-module syntax for all source modules.
+- `node --test tests/*.test.mjs` — **46 passed; zero failed**.
+- Existing initiative drag numeric planning, tie handling, locked-score bypass, new/late first-roll protections, native top Previous/Next controls and stale encounter checks.
+- Full mocked tracker: lock label changes immediately and remains correct after rerender; no toolbar duplication; snapshot state persists; Delay advances turn; Rejoin moves after active actor and then becomes next; health indicators stay singular.
+- User-reported drag scenario: moving the acting combatant does not follow them; the previously next person becomes active. Reordering someone else preserves current actor.
+- Round policy: delayed participants skipped, skip chains, expiry at next round, backward navigation. No effect on unrelated updates.
+- GM and controlling-player health visibility checks, hidden combatants, WoD20 damage/extra boxes, generic HP fallback and absent/invalid health values.
+- Mock owning-player request to GM over the module socket; rejected request targeting a different owner's Actor.
+- Package identity, manifest entry points, module ID, ZIP integrity and no unauthorized content.
 
-## Planned/unverified — live Foundry tests required
+## Confirmed live — Not yet run for v0.1.3
 
-1. Foundry v14 exact installed build with actual Combat Tracker sidebar and popout; GM sees exactly one Lock/Unlock and each rolled combatant has one grip handle. Start combat and confirm top Previous/Next Turn buttons appear directly above the list; footer controls remain. Test both controls through a round boundary and confirm only one turn advances per click.
-2. Player and GM login simultaneously; lock a test combat and reroll/Reset Initiative from each client. All previously rolled scores remain unchanged; confirm no spurious browser-console errors.
-3. A late entrant can roll once. On the next attempt its initiative is guarded. Turns/rounds still advance normally.
-4. GM drags a participant between others, then through ties. Check ordering, value presentation, chat behavior and preservation of the active combatant mid-round.
-5. Snapshot Restore restores original rolled scores without deleting late combatants or changing Actors.
-6. Check coexistence with WoD20 `worldofdarkness` exact installed version, Combat Workflow, and any modules that modify the Combat Tracker (especially Monk's Combat Details).
+The user reported drag reordering working and stale lock label in the earlier installed beta, but no exact live Foundry/system/module version or new v0.1.3 live workflow has been verified. Node/mocked hooks do not establish real Foundry timing or permissions.
 
-## Important risk
+## Required first real test
 
-Foundry's pre-update hooks are fired on the **initiating client**. This add-on is a guardrail for ordinary in-app actions on enabled clients, not a server-side enforcement mechanism. An external module may still *open* unwanted roll prompts or produce roll chat messages even if the initiative document update is canceled.
+Use a disposable Foundry v14 encounter with a GM + player logged in, 3 combatants with rolled initiatives and a saved world backup. Lock, unlock, and reroll. Drag the active combatant and confirm the next person is correct. Delay from a player's row and Rejoin during another combatant's turn. Verify round-edge expiration, a real health update and actor-owner visibility, top and footer turn controls, and whether other tracker modules interoperate. Inspect console for errors. Do **not** change the live campaign until these pass.
 
-**Confirmed live:** None. No server/client session was accessed.  
-**Deployment:** Not performed; installation requires the user's action.  
-**Rollback:** Disable the module; restore saved scores first, or recover the world snapshot for earlier Combatant initiative values. See README.
+## Known risks and rollback
+
+- Intercepting a native turn transition at `preUpdateCombat` is best-effort and needs Foundry v14 validation with additional modules that wrap `Combat.nextTurn`/`previousTurn`. Wounds/HP in unsupported systems are intentionally omitted.
+- Reordering or Rejoin changes initiative numbers; a snapshot or world backup is required to restore them. Delays are stored as per-round flags on Combat; no Actors are changed.
+- GM socket request uses the player's claimed user ID (module sockets do not authenticate sender identity). Use only with trusted player groups. Server-side permission enforcement is not supplied by this client module.
+- Rollback: recover the prior v0.1.2 module folder/ZIP; restore the world snapshot if necessary. Disabling code does not remove Combat flags or reverse changes to Combatants.
+
+**Deployment:** Not installed in the user's Foundry environment as part of this build. GitHub publication status must be verified separately.

@@ -1,24 +1,21 @@
-# WoD20 Initiative Tool v0.1.2 (Beta)
+# WoD20 Initiative Tool v0.1.3 (Beta) — Better turn control
 
-A compact, system-agnostic initiative safeguard for Foundry VTT v14. It does not modify WoD20's dice roller.
+The Lock Initiative button now explicitly shows whether initiative is locked and what clicking it will do. Dragging the current combatant no longer makes the tracker follow that character around the order.
 
-## What it adds
+## What's changed
 
-- GM Lock/Unlock for the current encounter so accidental rerolls do not replace existing scores.
-- Drag handles to reorder already rolled combatants.
-- A saved initiative snapshot and GM Restore action.
-- Previous Turn and Next Turn controls at the top of the tracker. Native bottom controls remain.
+- **Delay** the current combatant, then **Rejoin** later this round from the player or GM tracker. Rejoin places them after the person currently acting; an unused delay expires at the next round.
+- A compact **health bar** shows remaining health alongside eligible combatants. NPC health remains GM-only unless the player owns the Actor. WoD20 uses its actual wound levels; generic numeric HP is supported elsewhere.
+- Existing drag handles, initiative snapshots, Restore, and top Previous/Next Turn controls are retained.
 
-## Before you install
+## Before upgrading
 
-- **Beta:** 21 automated tests passed; the Foundry v14 live GM/player workflow is **not yet verified**. Test in a disposable world and back up your live world.
-- A lock is a standard Foundry client-side guard, not a server security policy. Another module may still show reroll prompts.
-- Dragging changes numeric initiative values. Restore saved scores before disabling, or revert to a world backup.
+**This is still a beta.** Back up the world and previous module folder; first try it with a GM and player in a test world. 46 automated/mock tests pass, but the new player requests, active-turn selection and in-game tracker presentation have **not** been tested in a real Foundry v14 session. Delay/Rejoin adds per-encounter flags and Rejoin may change Combatant initiative scores. Disabling the module does not undo those changes.
 
 ## Install
 
-- Foundry Setup → Add-on Modules → Install Module: paste `https://raw.githubusercontent.com/rebsiot/wod20-initiative-tool/main/module.json` as the manifest URL.
-- Alternatively download the ZIP asset, stop Foundry, and extract it so `module.json` is directly in `Data/modules/wod20-initiative-tool/`.
-- Enable in a **test world**, then try one encounter with GM and player clients.
+Version-pinned Foundry beta manifest:
 
-For complete usage and rollback guidance, see [README.md](https://github.com/rebsiot/wod20-initiative-tool/blob/main/README.md).
+`https://raw.githubusercontent.com/rebsiot/wod20-initiative-tool/v0.1.3/module.json`
+
+Or install the full `wod20-initiative-tool-v0.1.3-beta.zip` under `Data/modules/wod20-initiative-tool`. See README for first tests, limitations and rollback instructions.

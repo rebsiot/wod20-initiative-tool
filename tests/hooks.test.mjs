@@ -8,7 +8,7 @@ globalThis.Hooks = {
 };
 let warnings = 0;
 globalThis.ui = { notifications: { warn() { warnings++; }, info() {}, error() {} } };
-globalThis.game = { user: { isGM: false } };
+globalThis.game = { user: { isGM: false }, settings: { register() {} } };
 globalThis.foundry = { applications: { sidebar: { tabs: { CombatTracker: class CombatTracker {} } } } };
 await import("../scripts/main.mjs");
 for (const callback of hooks.get("init")) callback();
