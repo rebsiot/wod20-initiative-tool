@@ -30,7 +30,7 @@ function repaint() {
 }
 
 function statusLabel(isLocked) {
-  return isLocked ? "Initiative LOCKED — Unlock Initiative" : "Initiative UNLOCKED — Lock Initiative";
+  return isLocked ? "Unlock Initiative" : "Lock Initiative";
 }
 
 function refreshVisibleLockButtons(combat) {

@@ -8,12 +8,12 @@ test('renamed Foundry module identity and entry points are consistent', () => {
   const manifest = JSON.parse(get('module.json'));
   assert.equal(manifest.id, 'wod20-initiative-tool');
   assert.equal(manifest.title, 'WoD20 Initiative Tool (Beta)');
-  assert.equal(manifest.version, '0.1.3');
+  assert.equal(manifest.version, '0.1.4');
   assert.deepEqual(manifest.esmodules, ['scripts/main.mjs']);
   assert.deepEqual(manifest.styles, ['styles/initiative-tool.css']);
   assert.equal(manifest.socket, true);
-  assert.match(manifest.download, /v0\.1\.3\/wod20-initiative-tool-v0\.1\.3-beta\.zip$/);
-  assert.match(manifest.manifest, /v0\.1\.3\/module\.json$/);
+  assert.match(manifest.download, /v0\.1\.4\/wod20-initiative-tool-v0\.1\.4-beta\.zip$/);
+  assert.match(manifest.manifest, /v0\.1\.4\/module\.json$/);
   assert.match(get('scripts/main.mjs'), /const ID = "wod20-initiative-tool"/);
   assert.match(get('scripts/main.mjs'), /getFlag\(ID, "locked"\)/);
   assert.match(get('scripts/top-turn-controls.mjs'), /wod20-initiative-tool-turn-navigation/);

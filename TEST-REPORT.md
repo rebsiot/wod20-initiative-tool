@@ -1,34 +1,25 @@
-# WoD20 Initiative Tool v0.1.3 — Test report
+# WoD20 Initiative Tool v0.1.4 — Test Report
 
-**Date:** 2026-10-20  
-**Exact source baseline:** Published `rebsiot/wod20-initiative-tool` v0.1.2 commit `b668c2fe0414f87c39ef938aabd46e62aa8eef64` and the matching 19,471-byte published beta ZIP (`SHA-256 c57d49cdd6ffd65237868f2b95f0b8602be07d55772e82d2499c8b7f4852267a`). Working module ID remains `wod20-initiative-tool`.  
-**Target:** Foundry v14; native Foundry Combatant/Combat API; WoD20 `worldofdarkness` v7.3.x health schema read-only.
+**Candidate:** v0.1.4 Beta, 2026-10-20. **Module ID:** `wod20-initiative-tool`. **Target:** Foundry VTT v14, system-agnostic initiative guard and optional WoD20 health display.
 
-## Automated/mock-tested — Passed
+**Authoritative input:** the exact verified `v0.1.3` GitHub release source commit `83ccf915d5de4a0f48433d618a86f294c3a0485d` and its release ZIP SHA-256 `0a701f342b9a8a97cd0749d539b0274511d3366ed7760e9b2d1dfbbae38d63ae`. The local ZIP was inspected before modification.
 
-- Node ES-module syntax for all source modules.
-- `node --test tests/*.test.mjs` — **46 passed; zero failed**.
-- Existing initiative drag numeric planning, tie handling, locked-score bypass, new/late first-roll protections, native top Previous/Next controls and stale encounter checks.
-- Full mocked tracker: lock label changes immediately and remains correct after rerender; no toolbar duplication; snapshot state persists; Delay advances turn; Rejoin moves after active actor and then becomes next; health indicators stay singular.
-- User-reported drag scenario: moving the acting combatant does not follow them; the previously next person becomes active. Reordering someone else preserves current actor.
-- Round policy: delayed participants skipped, skip chains, expiry at next round, backward navigation. No effect on unrelated updates.
-- GM and controlling-player health visibility checks, hidden combatants, WoD20 damage/extra boxes, generic HP fallback and absent/invalid health values.
-- Mock owning-player request to GM over the module socket; rejected request targeting a different owner's Actor.
-- Package identity, manifest entry points, module ID, ZIP integrity and no unauthorized content.
+## Automated/mock-tested
 
-## Confirmed live — Not yet run for v0.1.3
+- Node ES-module syntax checked: passed.
+- Node test suite: **54 passed, 0 failed** (including 200 seeded drag-order cases within one test).
+- Drag uses an available integer gap when possible; consecutive/tied scores are re-ranked using whole numbers, with no fractions.
+- Seeded batch of **200 drag cases**, including ties and legacy fractional values, preserves the requested order and produces safe integers.
+- Existing earlier tests cover lock/update guard, snapshots, turn navigation, Delay/Rejoin and GM socket request simulation, client permissions and health, v14 tracker mock UI, source/manifest identity and active-turn regression.
+- Lock control's short text updates immediately and survives tracker rerenders. Heavy lock-state border styling has been removed.
+- Package checked for a manifest at ZIP root, expected entry points, new versioned URLs, no private assets/credentials and ZIP integrity.
 
-The user reported drag reordering working and stale lock label in the earlier installed beta, but no exact live Foundry/system/module version or new v0.1.3 live workflow has been verified. Node/mocked hooks do not establish real Foundry timing or permissions.
+## Confirmed live — not yet run for v0.1.4
 
-## Required first real test
+User reported drag reordering works in the earlier installed beta and supplied a screenshot showing the prior oversized lock label. This is valuable design feedback, **not a live test** of the new build. Exact current installed module/system versions and player/GM behavior have not been re-audited.
 
-Use a disposable Foundry v14 encounter with a GM + player logged in, 3 combatants with rolled initiatives and a saved world backup. Lock, unlock, and reroll. Drag the active combatant and confirm the next person is correct. Delay from a player's row and Rejoin during another combatant's turn. Verify round-edge expiration, a real health update and actor-owner visibility, top and footer turn controls, and whether other tracker modules interoperate. Inspect console for errors. Do **not** change the live campaign until these pass.
+## First live test after backing up world data
 
-## Known risks and rollback
+In a disposable Foundry v14 world, enable v0.1.4. With a GM and player client, roll three combatants (e.g. initiatives 12, 11, 10). Confirm the short Lock/Unlock button, then drag the last combatant between the others and confirm integer scores and the active turn remain correct. Delay and Rejoin that combatant in a gapless order. Verify native turn navigation and health indicators; Restore Order should recover its stored snapshot without changing Actors.
 
-- Intercepting a native turn transition at `preUpdateCombat` is best-effort and needs Foundry v14 validation with additional modules that wrap `Combat.nextTurn`/`previousTurn`. Wounds/HP in unsupported systems are intentionally omitted.
-- Reordering or Rejoin changes initiative numbers; a snapshot or world backup is required to restore them. Delays are stored as per-round flags on Combat; no Actors are changed.
-- GM socket request uses the player's claimed user ID (module sockets do not authenticate sender identity). Use only with trusted player groups. Server-side permission enforcement is not supplied by this client module.
-- Rollback: recover the prior v0.1.2 module folder/ZIP; restore the world snapshot if necessary. Disabling code does not remove Combat flags or reverse changes to Combatants.
-
-**Deployment:** Not installed in the user's Foundry environment as part of this build. GitHub publication status must be verified separately.
+**Rollback:** Disable module and reinstall the `v0.1.3` release from the backed-up module folder if needed. A module rollback does not revert Combatant initiative scores/flags; restore a world snapshot or intentionally use Restore Order before disabling.

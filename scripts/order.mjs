@@ -1,4 +1,41 @@
 /** Pure, Foundry-independent initiative ordering logic. */
+
+/**
+ * Produce distinct, descending whole-number rank slots close to the
+ * original scores. Prefer preserving as many current values as possible;
+ * with ties, try both directions and choose the smaller change set. These
+ * slots are assigned in the GM's requested order, not by actor identity.
+ */
+function integerSlots(entries) {
+  const rounded = entries.map(c => Math.round(c.initiative));
+  if (rounded.some(n => !Number.isSafeInteger(n))) return null;
+  const down = [rounded[0]];
+  for (let i = 1; i < rounded.length; i++) {
+    down.push(Math.min(rounded[i], down[i - 1] - 1));
+  }
+  const up = rounded.slice();
+  for (let i = up.length - 2; i >= 0; i--) {
+    up[i] = Math.max(rounded[i], up[i + 1] + 1);
+  }
+  const safe = candidate => candidate.every(Number.isSafeInteger)
+    && candidate.every((n, i) => i === 0 || candidate[i - 1] > n);
+  const candidates = [down, up].filter(safe);
+  if (!candidates.length) return null;
+  const anyNegativeOriginally = rounded.some(n => n < 0);
+  function cost(candidate) {
+    const changes = candidate.filter((n, i) => n !== entries[i].initiative).length;
+    const absoluteDifference = candidate.reduce((sum, n, i) => sum + Math.abs(n - entries[i].initiative), 0);
+    const newNegatives = !anyNegativeOriginally && candidate.some(n => n < 0) ? 1 : 0;
+    return [changes, newNegatives, absoluteDifference];
+  }
+  candidates.sort((a, b) => {
+    const x = cost(a), y = cost(b);
+    for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] - y[i];
+    return 0;
+  });
+  return candidates[0];
+}
+
 export function planMove(turns, movedId, targetId, placeBefore = true) {
   const entries = turns.filter(c => Number.isFinite(c.initiative));
   const fromIndex = entries.findIndex(c => c.id === movedId);
@@ -14,37 +51,33 @@ export function planMove(turns, movedId, targetId, placeBefore = true) {
   reordered.splice(newIndex, 0, moved);
   const preceding = reordered[newIndex - 1];
   const following = reordered[newIndex + 1];
-  if (!preceding) return { updates: [{ _id: moved.id, initiative: following.initiative + 1 }], reason: null };
-  if (!following) return { updates: [{ _id: moved.id, initiative: preceding.initiative - 1 }], reason: null };
-  if (preceding.initiative > following.initiative) {
-    const midpoint = (preceding.initiative + following.initiative) / 2;
-    if (midpoint > following.initiative && midpoint < preceding.initiative) {
-      return { updates: [{ _id: moved.id, initiative: midpoint }], reason: null };
+
+  // Preserve all other scores when an available whole-number gap allows it.
+  // Previously generated fractional scores are normalized on a subsequent
+  // actual drag rather than silently migrating a combat when the module loads.
+  const allWholeNumbers = entries.every(c => Number.isSafeInteger(c.initiative));
+  if (allWholeNumbers) {
+    let value = null;
+    if (!preceding) value = following.initiative + 1;
+    else if (!following) value = preceding.initiative - 1;
+    else if (preceding.initiative - following.initiative >= 2) {
+      value = Math.floor((preceding.initiative + following.initiative) / 2);
     }
-    return { updates: [], reason: "Adjacent initiative scores are too close to reorder safely." };
-  }
-  if (preceding.initiative !== following.initiative) {
-    return { updates: [], reason: "Unexpected initiative ordering; refresh the tracker and retry." };
+    if (Number.isSafeInteger(value)
+      && (!preceding || preceding.initiative > value)
+      && (!following || value > following.initiative)) {
+      return { updates: [{ _id: moved.id, initiative: value }], reason: null };
+    }
   }
 
-  // A tie has no numeric gap. Separate just that contiguous tie block by a small
-  // fractional amount; unlike a full reindex, all other original scores survive.
-  const tieScore = preceding.initiative;
-  let first = newIndex - 1;
-  let last = newIndex + 1;
-  while (first > 0 && reordered[first - 1].initiative === tieScore) first--;
-  while (last + 1 < reordered.length && reordered[last + 1].initiative === tieScore) last++;
-  const count = last - first + 1;
-  const upper = reordered[first - 1]?.initiative;
-  let step = 0.001;
-  if (upper !== undefined) step = Math.min(step, (upper - tieScore) / (count + 1));
-  if (!(step > Number.EPSILON * Math.max(1, Math.abs(tieScore)) * count)) {
-    return { updates: [], reason: "No safe numeric space remains among tied scores." };
-  }
-  const updates = reordered.slice(first, last + 1).map((combatant, i) => ({
-    _id: combatant.id,
-    initiative: tieScore + (count - 1 - i) * step
-  })).filter(({ _id, initiative }) => reordered.find(c => c.id === _id)?.initiative !== initiative);
+  // With adjacent/tied scores there is no integer between the neighbours.
+  // Transfer existing integer rank slots instead of introducing decimals.
+  // Ties (or decimals left from older builds) are normalized into distinct
+  // whole-number ranks only as part of this explicit reorder action.
+  const slots = integerSlots(entries);
+  if (!slots) return { updates: [], reason: "Initiative values are too large to reorder safely." };
+  const updates = reordered.map((c, i) => ({ _id: c.id, initiative: slots[i] }))
+    .filter((change, i) => reordered[i].initiative !== change.initiative);
   return { updates, reason: null };
 }
 

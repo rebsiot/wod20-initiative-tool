@@ -144,17 +144,17 @@ function setup() {
 test("Lock label changes immediately and survives repeated CombatTracker renders",async()=>{
   const x=setup();x.render();
   const first=x.root.querySelector(".wod20-initiative-tool-lock");
-  assert.match(first.textContent,/UNLOCKED.*Lock Initiative/);
+  assert.equal(first.textContent,"Lock Initiative");
   await x.click(first);
   assert.equal(x.combat.getFlag(flagsKey,"locked"),true);
-  assert.match(first.textContent,/LOCKED.*Unlock Initiative/);
+  assert.equal(first.textContent,"Unlock Initiative");
   x.render();
   assert.equal(x.root.querySelectorAll(".wod20-initiative-tool-toolbar").length,1);
-  assert.match(x.root.querySelector(".wod20-initiative-tool-lock").textContent,/LOCKED.*Unlock Initiative/);
+  assert.equal(x.root.querySelector(".wod20-initiative-tool-lock").textContent,"Unlock Initiative");
   await x.click(x.root.querySelector(".wod20-initiative-tool-lock"));
   assert.equal(x.combat.getFlag(flagsKey,"locked"),false);
   x.render();
-  assert.match(x.root.querySelector(".wod20-initiative-tool-lock").textContent,/UNLOCKED.*Lock Initiative/);
+  assert.equal(x.root.querySelector(".wod20-initiative-tool-lock").textContent,"Lock Initiative");
 });
 
 test("Delay ends active turn, Rejoin adds new spot after current actor",async()=>{
@@ -253,4 +253,37 @@ test("Owning player Delay request is executed once by GM over the module socket"
     game.user=gm;
     game.users.splice(game.users.indexOf(player),1);
   }
+});
+
+
+test("GM drag with consecutive integers keeps whole scores and prior next turn", async () => {
+  const x = setup();
+  x.combat.combatants.contents[0].initiative = 12;
+  x.combat.combatants.contents[1].initiative = 11;
+  x.combat.combatants.contents[2].initiative = 10;
+  x.render();
+  const drag = x.row("A").querySelector(".wod20-initiative-tool-handle");
+  const dataTransfer = {setData(){},effectAllowed:"",dropEffect:""};
+  x.root.listeners.get("dragstart")({target:drag,dataTransfer,stopPropagation(){}});
+  await x.root.listeners.get("drop")({target:x.row("C"),dataTransfer,clientY:95,preventDefault(){},stopPropagation(){}});
+  assert.deepEqual(x.combat.turns.map(c=>c.id),["B","C","A"]);
+  assert.deepEqual(x.combat.turns.map(c=>c.initiative),[11,10,9]);
+  assert.equal(x.combat.combatant.id,"B");
+});
+
+test("Rejoin between consecutive scores preserves integers and current turn", async () => {
+  const x = setup();
+  x.combat.combatants.contents[0].initiative = 12;
+  x.combat.combatants.contents[1].initiative = 11;
+  x.combat.combatants.contents[2].initiative = 10;
+  x.render();
+  await x.click(x.button("A", "delay"));
+  assert.equal(x.combat.combatant.id, "B");
+  x.render();
+  await x.click(x.button("A", "rejoin"));
+  assert.deepEqual(x.combat.turns.map(c=>c.id),["B","A","C"]);
+  assert.ok(x.combat.turns.every(c=>Number.isInteger(c.initiative)));
+  assert.equal(x.combat.combatant.id,"B");
+  await x.combat.nextTurn();
+  assert.equal(x.combat.combatant.id,"A");
 });

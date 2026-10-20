@@ -1,21 +1,21 @@
-# WoD20 Initiative Tool v0.1.3 (Beta) — Better turn control
+# WoD20 Initiative Tool v0.1.4 (Beta) — Less noise, whole-number initiative
 
-The Lock Initiative button now explicitly shows whether initiative is locked and what clicking it will do. Dragging the current combatant no longer makes the tracker follow that character around the order.
+The initiative lock button now says **Lock Initiative** or **Unlock Initiative**. It has the same quiet styling as Restore Order and no oversized lock-status caption.
 
-## What's changed
+Dragging a combatant or using Rejoin now assigns **whole-number initiative scores only**. Where there is space, only the moved combatant's score changes. When scores are consecutive or tied, enough ranks are reassigned to preserve the order without decimals. Dragging the current combatant still continues to the previously scheduled next person.
 
-- **Delay** the current combatant, then **Rejoin** later this round from the player or GM tracker. Rejoin places them after the person currently acting; an unused delay expires at the next round.
-- A compact **health bar** shows remaining health alongside eligible combatants. NPC health remains GM-only unless the player owns the Actor. WoD20 uses its actual wound levels; generic numeric HP is supported elsewhere.
-- Existing drag handles, initiative snapshots, Restore, and top Previous/Next Turn controls are retained.
+All other v0.1.3 features remain: Delay/Rejoin, read-only health indicator, snapshots/Restore, and top Previous/Next Turn controls.
 
 ## Before upgrading
 
-**This is still a beta.** Back up the world and previous module folder; first try it with a GM and player in a test world. 46 automated/mock tests pass, but the new player requests, active-turn selection and in-game tracker presentation have **not** been tested in a real Foundry v14 session. Delay/Rejoin adds per-encounter flags and Rejoin may change Combatant initiative scores. Disabling the module does not undo those changes.
+**Beta, not yet live-tested for v0.1.4.** Back up your world and module folder first. Initiative reordering can change several Combatant scores where there is no integer gap. Existing decimals from older releases are not migrated automatically. The next explicit drag normalizes existing rolled scores as part of the requested reorder; **Restore Order preserves the exact saved snapshot**, including older decimal values.
+
+Run a three-combatant encounter in a test world with GM and player clients. Check Lock → Unlock, drag across consecutive scores, then Delay → Rejoin and confirm the active turn and whole-number order. Test the health indicator and native turn controls as well.
 
 ## Install
 
 Version-pinned Foundry beta manifest:
 
-`https://raw.githubusercontent.com/rebsiot/wod20-initiative-tool/v0.1.3/module.json`
+`https://raw.githubusercontent.com/rebsiot/wod20-initiative-tool/v0.1.4/module.json`
 
-Or install the full `wod20-initiative-tool-v0.1.3-beta.zip` under `Data/modules/wod20-initiative-tool`. See README for first tests, limitations and rollback instructions.
+Or extract `wod20-initiative-tool-v0.1.4-beta.zip` into `Data/modules/wod20-initiative-tool/`. See README for detailed upgrade and rollback steps. The older v0.1.3 release is retained for rollback; reverting the module does not undo changed world-document initiative numbers.

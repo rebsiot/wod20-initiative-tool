@@ -57,18 +57,10 @@ li.combatant.wod20-initiative-tool-drop-below { box-shadow: inset 0 -3px 0 var(-
   cursor: default;
 }
 
-/* v0.1.3: the button is its ACTION, plus an unambiguous textual state.
-   Do not show a padlock icon with the opposite action. */
+/* Quiet action labels: Lock Initiative / Unlock Initiative.
+   Same border and weight as the neighboring Restore Order button. */
 .wod20-initiative-tool-lock {
-  font-weight: 650;
-  line-height: 1.25;
-}
-.wod20-initiative-tool-lock[data-locked="true"] {
-  border-style: solid;
-  border-width: 2px;
-}
-.wod20-initiative-tool-lock[data-locked="false"] {
-  border-style: dashed;
+  line-height: inherit;
 }
 
 .wod20-initiative-tool-row-actions {

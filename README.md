@@ -1,11 +1,11 @@
-# WoD20 Initiative Tool (Beta) — v0.1.3
+# WoD20 Initiative Tool (Beta) — v0.1.4
 
 A lightweight Foundry VTT v14 module to protect the Combat Tracker's initiative scores and make combat order easier to manage. It works with WoD20 M20/V20 **and other game systems**; the native Foundry combat model remains authoritative.
 
 ## Features
 
-- **Clear initiative locking.** The GM control reads **Initiative UNLOCKED — Lock Initiative** before locking and **Initiative LOCKED — Unlock Initiative** afterward. No ambiguous padlock. An encounter-specific score snapshot is saved whenever you lock.
-- **Drag to reorder.** The GM can drag a participant using the grip handle. Dragging the *current* combatant advances to the next eligible combatant from the prior order rather than following the moved participant; dragging someone else preserves the current actor.
+- **Simple initiative lock.** The GM control reads **Lock Initiative** when unlocked, and **Unlock Initiative** when locked. The large status caption, padlock and special button border are gone. An encounter-specific score snapshot is saved whenever you lock.
+- **Drag to reorder with whole numbers.** New drag operations assign **integer initiative scores only**. When there is an integer gap, only the moved score changes. When adjacent numbers or tied values leave no gap, the necessary rank scores are reassigned to whole numbers rather than fractions. Dragging the *current* combatant advances to the next eligible combatant from the prior order rather than following the moved participant; dragging someone else preserves the current actor.
 - **Delay / Rejoin.** The active combatant or GM can click **Delay** to yield that turn. Delayed combatants are skipped when the tracker advances, including with the native footer. **Rejoin** (for the controlling player or GM) inserts that participant immediately **after the combatant currently acting**, updating its initiative score to the new position. The current combatant finishes normally; the rejoining person acts next. If still waiting at the start of the next round, their delayed action expires and the prior initiative order is preserved.
 - **Read-only health indicator.** Shows a small remaining-health count/bar in the tracker. The GM sees tracked participants' health; players see health only for Actors they own, and never for hidden entries. Uses WoD20's actual health boxes, Bashing/Lethal/Aggravated damage and wound severity for Mage/Vampire where available. Falls back to common native numeric HP fields in other systems. Unsupported health tracks are left blank, not guessed.
 - **Convenient controls.** Top **Previous Turn / Next Turn** duplicates the native controls. Original bottom tracker buttons, system rolls, snapshots/Restore, and other Combatant fields are retained.
@@ -15,7 +15,7 @@ A lightweight Foundry VTT v14 module to protect the Combat Tracker's initiative 
 1. **Back up the Foundry world and current module folder.** Dragging, Rejoin and Restore can change Combatant initiative numbers, and Delay writes temporary flags to Combat documents. Disabling a module does not undo those world changes.
 2. In **Foundry Setup → Add-on Modules → Install Module**, use the version-pinned beta manifest:
 
-   `https://raw.githubusercontent.com/rebsiot/wod20-initiative-tool/v0.1.3/module.json`
+   `https://raw.githubusercontent.com/rebsiot/wod20-initiative-tool/v0.1.4/module.json`
 
    Or stop Foundry and extract the complete release ZIP with `module.json` directly inside `Data/modules/wod20-initiative-tool/`. For the St. Louis Samba share this is `Z:\Data\modules\wod20-initiative-tool\`.
 3. Enable **WoD20 Initiative Tool (Beta)** in **Manage Modules** for a **test world**. Refresh the GM and player clients.
@@ -25,7 +25,7 @@ The module ID `wod20-initiative-tool` and its existing `flags.wod20-initiative-t
 
 ## First live test (GM + player)
 
-1. Start a disposable encounter with three rolled participants, and **Lock Initiative**. Verify the button immediately becomes **Initiative LOCKED — Unlock Initiative**. Then unlock; verify the reverse. Confirm ordinary rerolls do not change existing scores when locked.
+1. Start a disposable encounter with three rolled participants, and **Lock Initiative**. Verify the button immediately becomes **Unlock Initiative**. Then unlock; verify the reverse. Confirm ordinary rerolls do not change existing scores when locked.
 2. Drag the current combatant downward; confirm the tracker advances to the previous order's next eligible person, not the dragged one. Drag a different combatant and verify the active turn does not jump.
 3. Click **Delay** on the current participant. Verify the next person becomes active, including if another participant is already delaying. From the owning player's tracker, click **Rejoin** and verify they appear directly after the current turn, not immediately interrupting it. Advance and verify they act next.
 4. Repeat Delay at the end of a round; confirm it expires as round advances, with no turn granted to the delayed actor in the old round.
@@ -40,8 +40,8 @@ The initiative lock guards normal standard Foundry document updates on the clien
 
 ## Known beta limitations
 
-- v0.1.3 has **automated/mock tests only**. No Foundry v14 live GM/player or cross-module session was available for verification. Native tracker DOM and turn/round event behavior need a real test, especially with Monk's Combat Details or other tracker replacements.
-- Drag/rejoin uses **numeric Combatant initiative** and may introduce fractional values when inserting between participants, preserving ties when possible. Snapshot Restore stores original scores, but is not an undo history of every step.
+- v0.1.4 has **automated/mock tests only**. No Foundry v14 live GM/player or cross-module session was available for verification. Native tracker DOM and turn/round event behavior need a real test, especially with Monk's Combat Details or other tracker replacements.
+- Drag/Rejoin only **write whole-number initiative**. When necessary, the GM action can update several combatants' scores to achieve the requested order; it does not rewrite every Actor's rolled initiative by default. Existing fractional scores from v0.1.3 are **not automatically migrated** on installation. An actual drag involving those scores normalizes the affected encounter's rolled scores. **Restore Order deliberately restores the exact saved snapshot**, including older fractional values if that is what was saved; it is not an integer-normalization command or undo history of every step.
 - Delaying only holds an action **within the current round**. An unclaimed delayed turn expires when that round ends. Rejoining joins **after** the current combatant rather than preempting their action.
 - Only rolled combatants can Delay or use the drag handle. Wraith Corpus and Changeling chimerical health and unusual/non-numeric game systems will not show a WoD20 physical-health value.
 - Rejoin through the owning player's button needs a connected GM. If a GM disconnects mid-request or native combat update fails, verify the order before proceeding.

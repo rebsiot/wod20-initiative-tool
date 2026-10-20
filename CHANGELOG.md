@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.1.4 (Beta) — 2026-10-20
+
+- Shortened the lock action to **Lock Initiative** / **Unlock Initiative** and removed the heavy active-state border and redundant status text; the native Combat Tracker styling remains.
+- Drag and Rejoin now assign **whole-number** Combatant initiative values only. Prefer changing only the moved entry when an integer gap exists; otherwise reassign the nearest necessary rank values without inserting decimals.
+- Preserve existing encounter IDs, locks, snapshots, Delay/Rejoin flags, existing health indicator, original turn progression and native WoD20 rolls. Previous saved initiative scores are not migrated silently.
+- Added adjacent-integer, tied-score, legacy-fraction, active-turn and 200 seeded drag-order regression cases. Live Foundry v14 beta test is still pending.
+
 ## v0.1.3 (Beta) — 2026-10-20
 
 - **Fixed:** Lock Initiative button now updates its action label immediately and on every tracker render. Removed ambiguous padlock icon; shows both the initiative state and the action clearly.
