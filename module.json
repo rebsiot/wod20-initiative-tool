@@ -1,0 +1,25 @@
+{
+  "id": "wod20-initiative-tool",
+  "title": "WoD20 Initiative Tool (Beta)",
+  "description": "Foundry v14 initiative lock, GM drag ordering, snapshot recovery and top-of-tracker turn buttons. System-agnostic.",
+  "version": "0.1.2",
+  "authors": [
+    {
+      "name": "St. Louis v2 private toolkit"
+    }
+  ],
+  "compatibility": {
+    "minimum": "14",
+    "maximum": "14"
+  },
+  "esmodules": [
+    "scripts/main.mjs"
+  ],
+  "styles": [
+    "styles/initiative-tool.css"
+  ],
+  "url": "https://github.com/rebsiot/wod20-initiative-tool",
+  "manifest": "https://raw.githubusercontent.com/rebsiot/wod20-initiative-tool/main/module.json",
+  "download": "https://github.com/rebsiot/wod20-initiative-tool/releases/download/v0.1.2/wod20-initiative-tool-v0.1.2-beta.zip",
+  "bugs": "https://github.com/rebsiot/wod20-initiative-tool/issues"
+}
